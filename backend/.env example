@@ -1,0 +1,7 @@
+DB_USER=(username of postgres)
+DB_HOST=localhost
+DB_NAME=(name of DB)
+DB_PASSWORD=(password of DB)
+DB_PORT=5432
+JWT_EXPIRE=6h
+PORT=(port assigned for backend)

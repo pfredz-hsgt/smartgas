@@ -1,0 +1,140 @@
+(Gas Name)
+(Size in cubic metre m3) (valve-type)
+
+Oxygen
+0.5 Pin Index
+0.7 Pin Index
+0.7 Bullnose
+1.4 Pin Index
+1.4 Ambulance
+1.4 Bullnose
+3.4 Bullnose
+
+Nitrous Oxide
+1.6 Pin index
+
+Carbon Dioxide 
+6KG Pin
+
+Entenox
+2.0 pin
+
+Compressed Air
+7.0 Bullnose
+6.8 Bullnose
+
+
+---------------------------------------
+System Architecture
+Backend - Fastify
+Frontend - React + Vite + Tailwind + Shadcn UI
+Database - Postgresql
+
+
+Frontend
+User Interface
+Pages
+- Login
+- Home/Main Scanner
+
+- View Inventory
+- Report
+- Settings
+    - Add/Edit/View/Delete 
+        - Gas Type (Oxygen, Carbon Dioxide, Nitrous Oxide, Entenox, Compressed Air)
+        - Gas Volume (0.5, 0.7 etc)
+        - Valve Type (Pin-Index, Bullnose)
+        - Status (Full, Empty, Expired)
+    - Gas Cylinder Info
+        - UUID
+        - Gas ID (for scanner/barcode generation, each cylinder will have different eventhough same type)
+        - Name (Generated based on Gas Type, Gas Volume, Valve Type)
+        - Gas Type
+        - Gas Volume
+        - Valve Type
+        - Batch Number
+        - Status
+        - Date Created
+        - Date Modified
+
+User Experience
+- Wireless 2D-Scanner
+- Quick Scan (Always listen to scanner, and capture immediately upon first scan, able to collect multiple items)
+
+Work Flow for Issuing Gas to Wards/Users by Staffs (Logistic Pharmacy Staff)
+1. Staffs received manual indent form from User
+2. Staffs proceed to isolate and retrieve the gas cylinders needed from the storage
+3. Staffs will open the frontend app, login, and proceed to the scanner (home) page. Staffs will select Issue tab, and input indenter/user/receiver name
+4. Staffs will scan each gas cylinder QR code/barcode using the wireless 2D-scanner
+5. System will validate each scanned QR code/barcode and check the status of the gas cylinder, and list them down on the page
+6. Staffs will verify the list to ensure it tally with the indent form, and physical, then proceed to confirm and submit
+7. System will update the status of the gas cylinder to 'Issued' and record the transaction (all the gas cylinder records will be in the Users unit inventory (eg: ICU, HD, OT, etc) and deducted from the logistic pharmacy inventory)
+8. Once successful, the page will prominently show a successful flash message with the list of items issued and to whom.
+9. It will then back to Home (standby page for next transaction)
+
+Work Flow for Returning Empty Gas Cylinders by Staffs (Logistic Pharmacy Staff)
+1. Staffs will open the frontend app, login, and proceed to the scanner (home) page. Staffs will select Returning tab, and input indenter/user/receiver name
+2. Staffs will scan each gas cylinder QR code/barcode using the wireless 2D-scanner
+3. System will validate each scanned QR code/barcode and check the status of the gas cylinder, and list them down on the page, with each of them having 'Empty' status beside it (with Edit button to change for special case return (usually empty), ie expired, damaged etc).
+4. Staffs will verify the list to ensure it tally with the indent form, and physical, then proceed to confirm and submit
+5. System will update the status of the gas cylinder to 'Returned' and record the transaction (all the gas cylinder records will be back to logistic pharmacy inventory)
+6. Once successful, the page will prominently show a successful flash message with the list of items returned.
+7. It will then back to Home (standby page for next transaction)
+
+Viewing Inventory by Logistic Pharmacy Staffs
+1. Staffs will open the frontend app, login, and proceed to the inventory page
+2. System will display all the gas cylinders available (both full and empty) in the logistic pharmacy inventory and selectable other units
+3. Staffs can view/display/search/filter/sort inventory by gas type, gas volume, valve type, status, batch number, date created, date modified
+4. Staffs can also view transaction history by date range, by unit, by gas type
+5. On any of the page, staffs can generate report in PDF (for printing) and Excel (for data processing/archiving)
+6. In shorts, at any given time, they are able to track the location of each individual cylinder in the whole hospital.
+
+Returning empty gas cylinders back from logistic pharmacy to concessionaire (vendor - Gas Pantai Timur Sdn Bhd (GPT)) for refilling
+1. Staffs will open the frontend app using mobile, login, and proceed to the scanner (home) page. Staffs will select 'Return to Gas Pantai Timur'
+2. Staffs will scan each gas cylinder QR code/barcode using the wireless 2D-scanner
+3. System will validate each scanned QR code/barcode and check the status of the gas cylinder, and list them down on the page, with each of them having 'Empty' status beside it (with Edit button to change for special case return (usually empty), ie expired, damaged etc).
+4. Staffs will verify the list to ensure it tally with physical, then confirm and submit
+5. System will update the status of the gas cylinder to 'Returned to GPT' and disappear from any units within the Hospital.
+6. Once successful, the page will prominently show a successful flash message with the list of items returned.
+7. It will then back to Home (standby page for next transaction)
+
+Receiving refilled gas cylinders from concessionaire (vendor - Gas Pantai Timur Sdn Bhd (GPT)) to logistic pharmacy
+1. Staffs will open the frontend app using mobile, login, and proceed to the scanner (home) page. Staffs will select 'Receive from Gas Pantai Timur'
+2. It will not have any QR code on the tank (unless its the same tank previously returned)
+3. Staff will have to "create" new records in the webapp, and instantly print a new QR/Barcode sticker to be pasted on the cylinder tank
+4. Staffs will scan each gas cylinder QR code/barcode using the wireless 2D-scanner
+5. System will validate each scanned QR code/barcode and check the status of the gas cylinder, and list them down on the page, with each of them having 'Full' status beside it (with Edit button to change for special case return (usually empty), ie expired, damaged etc).
+6. Staffs will verify the list to ensure it tally with the indent form, and physical, then proceed to confirm and submit
+7. System will update the status of the gas cylinder to 'Full' and record the transaction (all the gas cylinder records will be back to logistic pharmacy inventory)
+8. Once successful, the page will prominently show a successful flash message with the list of items returned.
+9. It will then back to Home (standby page for next transaction)
+
+Option 1 - use cylinder batch as QR Code
+pengguna perlu daftar setiap batch,  lekatkan specific qr code utk setiap silinder.
+qr x boleh tertukar,  setiap kali dapat silinder baru (xde sticker) kena print mengikut batch number silinder tersebut
+
+Option 2 - use UniqueID as QR Code
+setiap silinder akan diberikan ID unik,  bagi setiap jenis yang sama,  boleh bertukar silinder dengan batch berbeza
+cth: 0.7 bullnose 1,  0.7 bullnose 2 boleh bertukar QR memandangkan jenis sama
+contoh kod bagi QR: ox0.5pi1 - ox0.5pi2 - ox0.7bn1 - ca7.0bn1 -co6.0pi1 - no1.6pi1
+boleh print secara bulk utk standby - jika dapat silinder baru,  boleh tampal terus mengikut jenis gas
+
+Printing Method
+Thermal transfer onto Polyester Label Stock with Resin Ribbon
+Polyester (PET) peel-and-stick labels - chemical and abrasion resistant, withstands pressure washing and steam cleaning
+Resin Ribbon - chemical resistance, heat resistance, scratch resistance
+Overlaminate - Clear Label Protectors / Heavy Duty Packing Tape
+
+----------------------------------
+Hardware
+
+Barcode Scanner
+TEEMI TMSL-53CR 2D Bluetooth Barcode Scanner with USB Cradle (~RM 400+)
+Eyoyo 015P 3-in-1 2D Scanner (RM 100+)
+Tera HW0005 (RM 300+)
+
+Printer
+Use available Toshiba/Zebra Thermal Transfer Printer (Zebra ZD420)
+Label: Polyester (PET) peel-and-stick labels (kena beli) (precut if possible)
+Ribbon: Resin ribbon (kena beli)
+Overlaminate: Clear Label Protectors / Heavy Duty Packing Tape
