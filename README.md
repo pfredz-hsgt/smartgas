@@ -700,12 +700,231 @@ The system is optimised for **wireless 2D scanner rapid lookup** (<1ms target):
 
 ---
 
-## Production Deployment Notes
+## Production Deployment
 
-1. **Authentication**: Replace mock token with **bcrypt** password hashing + **JWT**
-2. **HTTPS**: Deploy behind Nginx/Caddy reverse proxy with TLS certificates
-3. **Base path**: Frontend builds to `/gas` — configure your web server accordingly
-4. **Database**: Use a managed PostgreSQL service or add **PgBouncer** for connection pooling
-5. **Environment secrets**: Never commit `backend/.env` — use a secrets manager in production
-6. **Default passwords**: Re-hash seeded user passwords with bcrypt before go-live
-7. **CORS**: Tighten `origin: true` in `server.js` to your specific frontend domain
+### Overview
+
+The recommended production setup is:
+
+```
+Internet / LAN
+      │
+      ▼
+ Apache HTTPD  (port 80 / 443)
+      │
+      ├─── /gas  ──────────────►  dist/  (static React build, served directly)
+      │
+      └─── /api  ──────────────►  ProxyPass → http://localhost:3009  (Fastify via PM2)
+```
+
+---
+
+### Step 1 — Build the Frontend
+
+```bash
+cd d:/dev/storgas
+npm run build          # outputs to dist/
+```
+
+The built files land in `dist/` with base path `/gas` already baked in.
+
+---
+
+### Step 2 — PM2 (Backend Process Manager)
+
+Install PM2 globally on the server:
+
+```bash
+npm install -g pm2
+```
+
+Create `backend/ecosystem.config.js` in the project:
+
+```js
+// backend/ecosystem.config.js
+export default {
+  apps: [
+    {
+      name: 'smartgas-api',
+      script: './backend/server.js',
+
+      // Run from project root so relative paths resolve correctly
+      cwd: 'D:/dev/storgas',
+
+      // Use Node.js ESM (required — package.json has "type": "module")
+      interpreter: 'node',
+      interpreter_args: '--experimental-vm-modules',
+
+      instances: 1,           // Single instance (scale up if needed)
+      exec_mode: 'fork',      // 'cluster' mode requires ESM-compatible PM2 v5+
+
+      watch: false,           // Disable in production (use CI/CD for restarts)
+      autorestart: true,
+      max_restarts: 10,
+      restart_delay: 3000,    // ms between auto-restarts
+
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3009,
+      },
+
+      // Logging
+      out_file: './logs/api-out.log',
+      error_file: './logs/api-error.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+    },
+  ],
+};
+```
+
+> Create the `logs/` directory first: `mkdir D:\dev\storgas\logs`
+
+**PM2 Commands:**
+
+```bash
+# Start / restart using ecosystem file
+pm2 start backend/ecosystem.config.js
+
+# Check status
+pm2 status
+
+# View live logs
+pm2 logs smartgas-api
+
+# Reload without downtime (when ecosystem.config.js updated)
+pm2 reload smartgas-api
+
+# Save process list so it survives reboots
+pm2 save
+
+# Register PM2 as a Windows startup service (run as Administrator)
+pm2-startup install
+# -- or on Linux/macOS:
+pm2 startup
+pm2 save
+```
+
+---
+
+### Step 3 — Apache VirtualHost Configuration
+
+Enable required Apache modules first:
+
+```bash
+# Linux (Debian/Ubuntu)
+sudo a2enmod proxy proxy_http rewrite headers
+
+# Windows XAMPP / manual Apache: uncomment in httpd.conf:
+# LoadModule proxy_module modules/mod_proxy.so
+# LoadModule proxy_http_module modules/mod_proxy_http.so
+# LoadModule rewrite_module modules/mod_rewrite.so
+# LoadModule headers_module modules/mod_headers.so
+```
+
+**VirtualHost config** (HTTP — add to `httpd.conf` or a dedicated `.conf` file in `conf/extra/` or `/etc/apache2/sites-available/`):
+
+```apache
+<VirtualHost *:80>
+    ServerName  yourhospital.local
+    # ServerName  192.168.1.100      # or IP address for LAN-only deployments
+
+    # ── Frontend: React Static Build ────────────────────────────────────
+    # Serve the Vite build output at /gas
+    Alias /gas "D:/dev/storgas/dist"
+
+    <Directory "D:/dev/storgas/dist">
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        Require all granted
+
+        # SPA fallback: any sub-path under /gas that is not a real file
+        # gets rewritten to /gas/index.html so React Router handles it
+        RewriteEngine On
+        RewriteBase /gas/
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^ index.html [L]
+    </Directory>
+
+    # ── Backend: Fastify API Reverse Proxy ───────────────────────────────
+    # All /api/* requests are forwarded to the PM2-managed Fastify server
+    ProxyPreserveHost On
+
+    ProxyPass        /api  http://127.0.0.1:3009/api
+    ProxyPassReverse /api  http://127.0.0.1:3009/api
+
+    # Forward real client IP to Fastify
+    RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}e"
+    RequestHeader set X-Forwarded-Proto "http"
+
+    # ── Logging ──────────────────────────────────────────────────────────
+    ErrorLog  "D:/dev/storgas/logs/apache-error.log"
+    CustomLog "D:/dev/storgas/logs/apache-access.log" combined
+</VirtualHost>
+```
+
+**Optional — HTTPS VirtualHost** (requires mod_ssl and a certificate):
+
+```apache
+<VirtualHost *:443>
+    ServerName yourhospital.local
+
+    SSLEngine on
+    SSLCertificateFile    /path/to/cert.pem
+    SSLCertificateKeyFile /path/to/key.pem
+
+    Alias /gas "D:/dev/storgas/dist"
+    <Directory "D:/dev/storgas/dist">
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        Require all granted
+        RewriteEngine On
+        RewriteBase /gas/
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^ index.html [L]
+    </Directory>
+
+    ProxyPreserveHost On
+    ProxyPass        /api  http://127.0.0.1:3009/api
+    ProxyPassReverse /api  http://127.0.0.1:3009/api
+
+    RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}e"
+    RequestHeader set X-Forwarded-Proto "https"
+
+    ErrorLog  "D:/dev/storgas/logs/apache-ssl-error.log"
+    CustomLog "D:/dev/storgas/logs/apache-ssl-access.log" combined
+</VirtualHost>
+```
+
+Restart Apache after saving the config:
+
+```bash
+# Linux
+sudo systemctl restart apache2
+
+# Windows XAMPP
+httpd -k restart
+
+# Windows service
+net stop Apache2.4 && net start Apache2.4
+```
+
+**Access the application at:** `http://yourhospital.local/gas`
+
+---
+
+### Production Checklist
+
+| Item | Details |
+|------|---------|
+| ✅ **Frontend built** | `npm run build` — `dist/` populated |
+| ✅ **Backend running via PM2** | `pm2 status` shows `online` |
+| ✅ **`backend/.env` configured** | Real DB credentials, correct PORT |
+| ✅ **Apache proxy modules enabled** | `mod_proxy`, `mod_proxy_http`, `mod_rewrite`, `mod_headers` |
+| ✅ **Logs directory exists** | `mkdir D:\dev\storgas\logs` |
+| ✅ **PM2 saved & startup configured** | `pm2 save && pm2 startup` |
+| ⚠️ **Default passwords changed** | Reseed or UPDATE users with bcrypt hashes |
+| ⚠️ **Mock auth replaced** | bcrypt + JWT for production |
+| ⚠️ **CORS tightened** | Set `origin` to specific domain in `server.js` |
