@@ -784,16 +784,16 @@ export default {
 
 ```bash
 # Start / restart using ecosystem file
-pm2 start backend/ecosystem.config.js
+pm2 start ecosystem.config.cjs
 
 # Check status
 pm2 status
 
 # View live logs
-pm2 logs smartgas-api
+pm2 logs smartgas-backend
 
 # Reload without downtime (when ecosystem.config.js updated)
-pm2 reload smartgas-api
+pm2 reload smartgas-backend
 
 # Save process list so it survives reboots
 pm2 save

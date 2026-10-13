@@ -6,6 +6,7 @@ import RegisterCylinderPage from './pages/RegisterCylinderPage';
 import LabelRegistrationPage from './pages/LabelRegistrationPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
+import { API_BASE } from './utils/api';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('scanner');
@@ -21,7 +22,7 @@ export default function App() {
   // Fetch reference settings from Fastify API
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings/all');
+      const res = await fetch(`${API_BASE}/settings/all`);
       if (res.ok) {
         const data = await res.json();
         setSettings(data);

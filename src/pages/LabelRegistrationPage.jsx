@@ -10,6 +10,7 @@ import {
   Flame
 } from 'lucide-react';
 import BarcodeRenderer from '../components/BarcodeRenderer';
+import { API_BASE } from '../utils/api';
 
 const formatDateDDMMYYYY = (val) => {
   if (!val) val = new Date();
@@ -67,7 +68,7 @@ export default function LabelRegistrationPage({ settings, onCylinderCreated, ini
 
     try {
       const res = await fetch(
-        `/api/cylinders/next-id?gas_type_id=${singleGasTypeId}&gas_volume_id=${singleVolumeId}&valve_type_id=${singleValveId}`
+        `${API_BASE}/cylinders/next-id?gas_type_id=${singleGasTypeId}&gas_volume_id=${singleVolumeId}&valve_type_id=${singleValveId}`
       );
       if (res.ok) {
         const data = await res.json();
@@ -119,7 +120,7 @@ export default function LabelRegistrationPage({ settings, onCylinderCreated, ini
     setSuccessMessage(null);
 
     try {
-      const res = await fetch('/api/labels/preview-batch', {
+      const res = await fetch(`${API_BASE}/labels/preview-batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

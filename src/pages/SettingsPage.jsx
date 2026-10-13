@@ -16,6 +16,7 @@ import {
   ChevronDown,
   GripVertical
 } from 'lucide-react';
+import { API_BASE } from '../utils/api';
 
 export default function SettingsPage({ settings, onSettingsUpdated }) {
   const [subTab, setSubTab] = useState('GAS_TYPES'); // 'GAS_TYPES', 'VOLUMES', 'VALVES', 'STATUSES', 'LOCATIONS', 'VENDORS'
@@ -54,7 +55,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
     setReordering(true);
     try {
       const ordered_ids = list.map(item => item.id);
-      const res = await fetch('/api/settings/reorder', {
+      const res = await fetch(`${API_BASE}/settings/reorder`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -269,7 +270,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
     let payload = {};
 
     if (editTab === 'GAS_TYPES') {
-      endpoint = `/api/gas-types/${editingItem.id}`;
+      endpoint = `${API_BASE}/gas-types/${editingItem.id}`;
       payload = {
         code: editFormData.code,
         name: editFormData.name,
@@ -277,21 +278,21 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
         description: editFormData.description,
       };
     } else if (editTab === 'VOLUMES') {
-      endpoint = `/api/gas-volumes/${editingItem.id}`;
+      endpoint = `${API_BASE}/gas-volumes/${editingItem.id}`;
       payload = {
         volume_value: parseFloat(editFormData.volume_value),
         unit: editFormData.unit,
         display_label: editFormData.display_label || `${editFormData.volume_value} ${editFormData.unit}`,
       };
     } else if (editTab === 'VALVES') {
-      endpoint = `/api/valve-types/${editingItem.id}`;
+      endpoint = `${API_BASE}/valve-types/${editingItem.id}`;
       payload = {
         code: editFormData.code,
         name: editFormData.name,
         description: editFormData.description,
       };
     } else if (editTab === 'STATUSES') {
-      endpoint = `/api/statuses/${editingItem.id}`;
+      endpoint = `${API_BASE}/statuses/${editingItem.id}`;
       payload = {
         code: editFormData.code,
         name: editFormData.name,
@@ -299,7 +300,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
         description: editFormData.description,
       };
     } else if (editTab === 'LOCATIONS') {
-      endpoint = `/api/locations/${editingItem.id}`;
+      endpoint = `${API_BASE}/locations/${editingItem.id}`;
       payload = {
         code: editFormData.code,
         name: editFormData.name,
@@ -310,7 +311,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
         contact_phone: editFormData.contact_phone,
       };
     } else if (editTab === 'VENDORS') {
-      endpoint = `/api/vendors/${editingItem.id}`;
+      endpoint = `${API_BASE}/vendors/${editingItem.id}`;
       payload = {
         code: editFormData.code,
         name: editFormData.name,
@@ -351,7 +352,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/gas-types', {
+      const res = await fetch(`${API_BASE}/gas-types`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -384,7 +385,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/gas-volumes', {
+      const res = await fetch(`${API_BASE}/gas-volumes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -415,7 +416,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/valve-types', {
+      const res = await fetch(`${API_BASE}/valve-types`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -447,7 +448,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/statuses', {
+      const res = await fetch(`${API_BASE}/statuses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -480,7 +481,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/locations', {
+      const res = await fetch(`${API_BASE}/locations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -517,7 +518,7 @@ export default function SettingsPage({ settings, onSettingsUpdated }) {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/vendors', {
+      const res = await fetch(`${API_BASE}/vendors`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

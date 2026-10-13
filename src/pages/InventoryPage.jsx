@@ -16,6 +16,7 @@ import {
   X,
   AlertCircle
 } from 'lucide-react';
+import { API_BASE } from '../utils/api';
 
 export default function InventoryPage({ settings, onSelectPrintLabel, onCylinderUpdated }) {
   const [cylinders, setCylinders] = useState([]);
@@ -71,7 +72,7 @@ export default function InventoryPage({ settings, onSelectPrintLabel, onCylinder
     setEditError(null);
 
     try {
-      const res = await fetch(`/api/cylinders/${editingCylinder.id}`, {
+      const res = await fetch(`${API_BASE}/cylinders/${editingCylinder.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -106,7 +107,7 @@ export default function InventoryPage({ settings, onSelectPrintLabel, onCylinder
     if (!cylinderToDelete) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/cylinders/${cylinderToDelete.id}`, {
+      const res = await fetch(`${API_BASE}/cylinders/${cylinderToDelete.id}`, {
         method: 'DELETE',
       });
       const data = await res.json();
@@ -139,7 +140,7 @@ export default function InventoryPage({ settings, onSelectPrintLabel, onCylinder
     setError(null);
     try {
       const activeSearch = searchQuery !== undefined ? searchQuery : debouncedSearchTerm;
-      let url = `/api/cylinders?limit=500`;
+      let url = `${API_BASE}/cylinders?limit=500`;
       if (selectedLocationId) url += `&location_id=${selectedLocationId}`;
       if (selectedGasTypeId) url += `&gas_type_id=${selectedGasTypeId}`;
       if (selectedStatusId) url += `&status_id=${selectedStatusId}`;

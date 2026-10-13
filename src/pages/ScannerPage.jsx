@@ -16,6 +16,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { playBeep, playSuccess, playError } from '../utils/sound';
+import { API_BASE } from '../utils/api';
 
 export default function ScannerPage({ settings, onCylinderUpdated }) {
   const [workflow, setWorkflow] = useState('ISSUE'); // 'ISSUE', 'RETURN', 'RETURN_TO_GPT', 'RECEIVE_FROM_GPT'
@@ -181,7 +182,7 @@ export default function ScannerPage({ settings, onCylinderUpdated }) {
     setErrorMessage(null);
 
     try {
-      const res = await fetch(`/api/cylinders/lookup/${encodeURIComponent(cleanCode)}`);
+      const res = await fetch(`${API_BASE}/cylinders/lookup/${encodeURIComponent(cleanCode)}`);
 
       if (!res.ok) {
         if (workflow === 'RECEIVE_FROM_GPT') {
@@ -410,7 +411,7 @@ export default function ScannerPage({ settings, onCylinderUpdated }) {
     try {
       setIsUpdatingLocation(true);
       if (item.id) {
-        const res = await fetch(`/api/cylinders/${item.id}`, {
+        const res = await fetch(`${API_BASE}/cylinders/${item.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -635,7 +636,7 @@ export default function ScannerPage({ settings, onCylinderUpdated }) {
         if (!destinationWardId) {
           throw new Error('Please select destination ward / unit.');
         }
-        endpoint = '/api/transactions/issue';
+        endpoint = `${API_BASE}/transactions/issue`;
         payload = {
           destination_location_id: destinationWardId,
           indent_no: indentNo,
@@ -647,7 +648,7 @@ export default function ScannerPage({ settings, onCylinderUpdated }) {
         if (!indenterName.trim()) {
           throw new Error('Please enter returner / staff name.');
         }
-        endpoint = '/api/transactions/return';
+        endpoint = `${API_BASE}/transactions/return`;
         payload = {
           indent_no: indentNo,
           indenter_name: indenterName,
@@ -659,7 +660,7 @@ export default function ScannerPage({ settings, onCylinderUpdated }) {
           notes,
         };
       } else if (workflow === 'RETURN_TO_GPT') {
-        endpoint = '/api/transactions/return-to-vendor';
+        endpoint = `${API_BASE}/transactions/return-to-vendor`;
         payload = {
           delivery_order_no: deliveryOrderNo,
           items: scannedItems.map(i => ({
@@ -670,7 +671,7 @@ export default function ScannerPage({ settings, onCylinderUpdated }) {
           notes,
         };
       } else if (workflow === 'RECEIVE_FROM_GPT') {
-        endpoint = '/api/transactions/receive-from-vendor';
+        endpoint = `${API_BASE}/transactions/receive-from-vendor`;
         payload = {
           delivery_order_no: deliveryOrderNo,
           batch_number: batchNumber,

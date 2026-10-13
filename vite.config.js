@@ -12,9 +12,10 @@ export default defineConfig({
     host: true, 
     open: true,
     proxy: {
-      '/api': {
+      '/gas/api': {
         target: 'http://localhost:3009',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/gas/, ''),
       },
     },
   },

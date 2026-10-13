@@ -15,6 +15,7 @@ import {
   Volume2
 } from 'lucide-react';
 import { playBeep, playSuccess, playError } from '../utils/sound';
+import { API_BASE } from '../utils/api';
 
 export default function RegisterCylinderPage({ settings, onCylinderRegistered }) {
   const [registerMode, setRegisterMode] = useState('QUICK'); // 'QUICK' or 'DETAILED'
@@ -129,7 +130,7 @@ export default function RegisterCylinderPage({ settings, onCylinderRegistered })
 
     try {
       // 1. Check if cylinder is ALREADY registered
-      const lookupRes = await fetch(`/api/cylinders/lookup/${encodeURIComponent(cleanCode)}`);
+      const lookupRes = await fetch(`${API_BASE}/cylinders/lookup/${encodeURIComponent(cleanCode)}`);
       if (lookupRes.ok) {
         const existing = await lookupRes.json();
         playError();
@@ -152,7 +153,7 @@ export default function RegisterCylinderPage({ settings, onCylinderRegistered })
       }
 
       // 3. Register cylinder into database
-      const regRes = await fetch('/api/cylinders', {
+      const regRes = await fetch(`${API_BASE}/cylinders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -219,7 +220,7 @@ export default function RegisterCylinderPage({ settings, onCylinderRegistered })
     setSuccessMessage(null);
 
     try {
-      const regRes = await fetch('/api/cylinders', {
+      const regRes = await fetch(`${API_BASE}/cylinders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

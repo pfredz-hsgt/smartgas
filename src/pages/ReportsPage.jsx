@@ -13,6 +13,7 @@ import {
   X,
   FileSpreadsheet
 } from 'lucide-react';
+import { API_BASE } from '../utils/api';
 
 export default function ReportsPage({ settings }) {
   const [transactions, setTransactions] = useState([]);
@@ -29,8 +30,8 @@ export default function ReportsPage({ settings }) {
     setLoading(true);
     try {
       const [dashRes, txnRes] = await Promise.all([
-        fetch('/api/reports/dashboard'),
-        fetch(`/api/transactions?type=${typeFilter}&search=${encodeURIComponent(searchTerm)}&limit=100`),
+        fetch(`${API_BASE}/reports/dashboard`),
+        fetch(`${API_BASE}/transactions?type=${typeFilter}&search=${encodeURIComponent(searchTerm)}&limit=100`),
       ]);
 
       if (dashRes.ok) setDashboardData(await dashRes.json());
@@ -54,7 +55,7 @@ export default function ReportsPage({ settings }) {
   const openTxnDetails = async (txnId) => {
     setLoadingTxnDetail(true);
     try {
-      const res = await fetch(`/api/transactions/${txnId}`);
+      const res = await fetch(`${API_BASE}/transactions/${txnId}`);
       if (res.ok) {
         setSelectedTxn(await res.json());
       }
