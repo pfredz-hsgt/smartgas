@@ -3,8 +3,8 @@ export default {
     apps: [
         {
             name: 'smartgas-backend',
-            script: './server.js',
-
+            script: '/var/www/storgas/backend/server.js',
+            cwd: '/var/www/storgas/backend',
             instances: 1,           // Single instance (scale up if needed)
             exec_mode: 'fork',      // 'cluster' mode requires ESM-compatible PM2 v5+
             watch: false,           // Disable in production (use CI/CD for restarts)
